@@ -3,12 +3,19 @@
 # ==============================
 
 $blockedApps = @(
-    "steam"
+    "steam",
+    "osu!"
 )
 
 $blockedWebsites = @(
-    "x.com",
-    "www.x.com"
+    "reddit.com",
+    "www.reddit.com",
+    "instagram.com",
+    "www.instagram.com",
+    "facebook.com",
+    "www.facebook.com",
+    "twitch.tv",
+    "www.twitch.tv"
 )
 
 $morningStart = "09:00"
