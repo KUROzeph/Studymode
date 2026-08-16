@@ -100,15 +100,25 @@ class Dashboard(QWidget):
         )
 
         self.start_button = QPushButton(
-            "START"
+        "START"
         )
 
         self.start_button.setObjectName(
-            "startButton"
+        "startButton"
         )
 
         self.start_button.clicked.connect(
-            self.toggle_timer
+        self.toggle_timer
+        )
+
+        self.pause_button = QPushButton(
+        "PAUSE"
+        )
+
+        self.pause_button.setEnabled(False)
+
+        self.pause_button.clicked.connect(
+        self.toggle_pause
         )
 
         content_layout.addStretch()
@@ -123,8 +133,18 @@ class Dashboard(QWidget):
 
         content_layout.addSpacing(30)
 
-        content_layout.addWidget(
-            self.start_button
+        button_layout = QHBoxLayout()
+
+        button_layout.addWidget(
+        self.pause_button
+        )
+
+        button_layout.addWidget(
+        self.start_button
+        )
+
+        content_layout.addLayout(
+        button_layout
         )
 
         content_layout.addStretch()
@@ -352,6 +372,10 @@ class Dashboard(QWidget):
                 False
             )
 
+            self.pause_button.setEnabled(
+                True
+            )
+
             self.start_button.setText(
                 "STOP"
             )
@@ -368,12 +392,36 @@ class Dashboard(QWidget):
                 True
             )
 
+            self.pause_button.setEnabled(
+                False
+            )
+
             self.start_button.setText(
                 "START"
             )
 
             self.time_label.setText(
                 "00:00:00"
+            )
+
+    def toggle_pause(self):
+        if not self.study_timer.running:
+            return
+
+        if not self.study_timer.paused:
+
+            self.study_timer.pause()
+
+            self.pause_button.setText(
+                "RESUME"
+            )
+
+        else:
+
+            self.study_timer.resume()
+
+            self.pause_button.setText(
+                "PAUSE"
             )
 
     # display time
