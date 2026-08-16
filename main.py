@@ -1,4 +1,9 @@
-from database import initialize_database, add_subject, get_subjects
+import sys
+
+from PySide6.QtWidgets import QApplication
+
+from database import initialize_database, get_subjects
+from menu import Dashboard
 
 
 def main():
@@ -6,17 +11,12 @@ def main():
 
     subjects = get_subjects()
 
-    if not subjects:
-        add_subject("calc")
-        add_subject("code")
-        add_subject("chem")
+    app = QApplication(sys.argv)
 
-    subjects = get_subjects()
+    window = Dashboard(subjects)
+    window.show()
 
-    print("subjects:")
-
-    for subject in subjects:
-        print(f"{subject['id']}: {subject['name']}")
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
