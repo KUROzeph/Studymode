@@ -20,7 +20,8 @@ def initialize_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
             color TEXT NOT NULL DEFAULT '#ffffff',
-            created_at TEXT NOT NULL
+            created_at TEXT NOT NULL,
+            deleted_at TEXT
         )
     """)
 
@@ -35,6 +36,18 @@ def initialize_database():
         )
     """)
 
+    # For databases created before deleted_at existed
+    columns = connection.execute(
+        "PRAGMA table_info(subjects)"
+    ).fetchall()
+
+    column_names = [column["name"] for column in columns]
+
+    if "deleted_at" not in column_names:
+        connection.execute(
+            "ALTER TABLE subjects ADD COLUMN deleted_at TEXT"
+        )
+
     connection.commit()
     connection.close()
 
@@ -44,15 +57,21 @@ def add_subject(name, color="#ffffff"):
 
     cursor = connection.execute(
         """
-        INSERT INTO subjects (name, color, created_at)
-        VALUES (?, ?, ?)
+        INSERT INTO subjects
+        (name, color, created_at, deleted_at)
+        VALUES (?, ?, ?, NULL)
         """,
-        (name, color, datetime.now().isoformat())
+        (
+            name,
+            color,
+            datetime.now().isoformat()
+        )
     )
 
     connection.commit()
 
     subject_id = cursor.lastrowid
+
     connection.close()
 
     return subject_id
@@ -65,6 +84,7 @@ def get_subjects():
         """
         SELECT id, name, color, created_at
         FROM subjects
+        WHERE deleted_at IS NULL
         ORDER BY name
         """
     ).fetchall()
@@ -74,7 +94,68 @@ def get_subjects():
     return subjects
 
 
-def save_study_session(subject_id, started_at, ended_at, duration):
+def rename_subject(subject_id, new_name):
+    connection = get_connection()
+
+    connection.execute(
+        """
+        UPDATE subjects
+        SET name = ?
+        WHERE id = ?
+        AND deleted_at IS NULL
+        """,
+        (
+            new_name,
+            subject_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def delete_subject(subject_id):
+    connection = get_connection()
+
+    connection.execute(
+        """
+        UPDATE subjects
+        SET deleted_at = ?
+        WHERE id = ?
+        AND deleted_at IS NULL
+        """,
+        (
+            datetime.now().isoformat(),
+            subject_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def restore_subject(subject_id):
+    connection = get_connection()
+
+    connection.execute(
+        """
+        UPDATE subjects
+        SET deleted_at = NULL
+        WHERE id = ?
+        """,
+        (subject_id,)
+    )
+
+    connection.commit()
+    connection.close()
+
+
+def save_study_session(
+    subject_id,
+    started_at,
+    ended_at,
+    duration
+):
     connection = get_connection()
 
     connection.execute(
