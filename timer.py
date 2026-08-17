@@ -15,6 +15,9 @@ class StudyTimer:
             return
 
         self.started_at = datetime.now()
+        self.paused_at = None
+        self.total_paused_seconds = 0
+
         self.running = True
         self.paused = False
 
@@ -29,8 +32,11 @@ class StudyTimer:
         if not self.running or not self.paused:
             return
 
-        pause_duration = datetime.now() - self.paused_at
-        self.total_paused_seconds += pause_duration.total_seconds()
+        pause_duration = (
+            datetime.now() - self.paused_at
+        ).total_seconds()
+
+        self.total_paused_seconds += pause_duration
 
         self.paused_at = None
         self.paused = False
@@ -39,14 +45,17 @@ class StudyTimer:
         if not self.running or self.started_at is None:
             return 0
 
-        end_time = datetime.now()
+        current_time = datetime.now()
 
-        elapsed = (end_time - self.started_at).total_seconds()
+        elapsed = (
+            current_time - self.started_at
+        ).total_seconds()
+
         elapsed -= self.total_paused_seconds
 
         if self.paused:
             elapsed -= (
-                datetime.now() - self.paused_at
+                current_time - self.paused_at
             ).total_seconds()
 
         return max(0, int(elapsed))
@@ -58,12 +67,17 @@ class StudyTimer:
         ended_at = datetime.now()
         duration = self.elapsed_seconds()
 
-        started_at = self.started_at
+        session_data = (
+            self.started_at,
+            ended_at,
+            duration
+        )
 
         self.started_at = None
         self.paused_at = None
         self.total_paused_seconds = 0
+
         self.running = False
         self.paused = False
 
-        return started_at, ended_at, duration
+        return session_data
