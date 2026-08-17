@@ -172,5 +172,28 @@ def save_study_session(
         )
     )
 
+def get_study_sessions():
+    connection = get_connection()
+
+    sessions = connection.execute(
+        """
+        SELECT
+            study_sessions.id,
+            study_sessions.subject_id,
+            subjects.name AS subject_name,
+            study_sessions.started_at,
+            study_sessions.ended_at,
+            study_sessions.duration
+        FROM study_sessions
+        JOIN subjects
+            ON study_sessions.subject_id = subjects.id
+        ORDER BY study_sessions.started_at DESC
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return sessions
+
     connection.commit()
     connection.close()
